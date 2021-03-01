@@ -10,6 +10,9 @@ import threading
 import time
 import asyncio
 import socket
+import json
+
+#https://www.geeksforgeeks.org/reading-and-writing-json-to-a-file-in-python/
 
 # System call
 os.system("")
@@ -42,6 +45,24 @@ loading = """
 #create the loop for the ping function
 loop = asyncio.get_event_loop() or asyncio.create_event_loop()
  
+
+#save ips to a json file
+def saveip():
+    print(f"Enter the IP:")
+    ip = input()
+    try:
+        print (ipaddress.ip_address(ip), "is a active ip address")
+    except Exception as e:
+        wait = input(f"The ip you entered is not a valid ip address.")
+    #write to a json file
+    json_object = json.dumps(ip, indent = 4) 
+    with open("ips.json", "w") as outfile: 
+        outfile.write(json_object) 
+
+def loadip():
+    with open('ips.json', 'r') as openfile: 
+        json_object = json.load(openfile) 
+    print("IPS: \n" + json_object)
 
 #create code that gets a area a ip is in
 def locate():
@@ -127,7 +148,9 @@ def ipstart():
     - attack {dos a ip}
     - get {get a websites ip}
     - locate {get the area a ip is located in}
-    - ipinfo {see all public info on a ip}""")
+    - ipinfo {see all public info on a ip}
+    - saveip {saves a ip in a json file}
+    - loadip {loads all your saved ips}""")
     #does the action the user says.
     action = input()
     if action == "attack":
@@ -146,6 +169,14 @@ def ipstart():
         print(style.CYAN, loading, style.RESET)
         time.sleep(3)
         ipinfo()
+    elif action == "saveip":
+        print(style.CYAN, loading, style.RESET)
+        time.sleep(3)
+        saveip()
+    elif action == "loadip":
+        print(style.CYAN, loading, style.RESET)
+        time.sleep(3)
+        loadip()
     else:
         print("You did not enter a correct action to perform!")
         print(style.CYAN, loading, style.RESET)
@@ -154,6 +185,7 @@ def ipstart():
 
 
 ipstart()
+
 
 
 ```
