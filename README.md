@@ -1,2 +1,2 @@
 # iptool
-get info about ips/more
+I am not responsible for any actions taken by the users of this code!
